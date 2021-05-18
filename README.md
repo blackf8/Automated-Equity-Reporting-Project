@@ -1,1 +1,1 @@
-# Automated-Equity-Project-AER-
+# Automated-Equity-Research-Project-AER-
