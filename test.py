@@ -53,7 +53,7 @@ def get_Div_data(company_data):
 	keyList = list(div_date_data.keys())
 	print("Dividends Data")
 	for date in keyList:
-		div_price = div_date_data[x]['amount']
+		div_price = div_date_data[date]['amount']
 		print(str(date) + ": " + str(div_price))
 
 def get_stock_price_data(company_data):
