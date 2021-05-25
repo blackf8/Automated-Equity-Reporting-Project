@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 import test
 # things needed (some are done)
 # list of apis (preset inside each method)
@@ -11,9 +11,9 @@ import test
 # *maaaybe a method that takes the results and gives them a value that can be generalized more
 
 class abstractBox(object, metaclass=ABCMeta):
-    self.apiList=[]
-    self.tickerList=[]
-    self.resultList=[]
+    apiList=[]
+    tickerList=[]
+    resultList=[]
     
     @abstractmethod
     def __init__(self, n): #abstract constructor, idfk if this needs to be abstract or not bc we need tickers to be not abstract
