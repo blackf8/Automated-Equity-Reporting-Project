@@ -45,7 +45,7 @@ def get_sheet(financials, tickers, period, sheetType):
 		df = df.append(data, ignore_index = True)
 	return df
 #returns stock price data for ticker symbol
-def get_stock_price_data_withPD(financials, tickers, start_data, end_date, period):
+def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
 	#gets historical daily stock price of company
 	historical_stock_prices_data = financials.get_historical_price_data(start_date, end_date, period)
 	company_data = historical_stock_prices_data[tickers]
