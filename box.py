@@ -26,7 +26,7 @@ class AbstractBox(ABC):
     #     pass
     @abstractmethod
     def tickerEvaluator(self): #more parameters after talk w prabu
-        pass 
+        pass
     @abstractmethod
     def totalEvaluator(self): # some specifics after prabu
         pass #dont think this needs to be abstract, but also we havent defined any ticker object bc its abstract as of rn so unsure
@@ -44,16 +44,16 @@ class PriceBox(AbstractBox):
         self._resultList = [[]]
 
     def tickerEvaluator(self, ticker):  # needs the 2 dates that are to be analyzed, also needs the ticker or tickers needed. If it only works with one ticker might want to do it inside evaluator
-        
+
         df = input.get_stock_price_data_withPD(self.__financials,ticker,self.__startDate,self.__endDate,'daily')
         print (df)
-        return 
- 
-         #pulls out the company value as pandas 
+        return
+
+         #pulls out the company value as pandas
         # get value of ticker at startDate
         # get value of ticker at endDate-1110
         # compute percent price increase by startDate value/ endDate-1 value
-    
+
     def totalEvaluator(self, tickerList):
         #
         hd = dict.fromkeys(tickerList)
@@ -62,17 +62,17 @@ class PriceBox(AbstractBox):
             tickerValue = self.tickerEvaluator(ticker)
             hd[ticker]= tickerValue
         return hd
-        
-        # get the dictionary 
+
+        # get the dictionary
         # run ticketEvaluator for all tickers in tickerList \/\/\/
         # for i in tickerList:
         #   binary_tree.append(tickerEvaluator(self, i))
         # sort the dictionary with some sort of 21a heresy to rank every company
-        # return that 
-        
+        # return that
+
     def equalizer(self):
-        pass #pass for now, there is only one box 
-    
+        pass #pass for now, there is only one box
+
 
 
 class DCFbox(AbstractBox):
@@ -89,10 +89,10 @@ class DCFbox(AbstractBox):
         pass
 
     def calcWACC(self, FVXdata, GSPCdata, tickerdataIncome, tickerdataBalance, tickerdataCash, tickerdataSummary):
-        #variables needed: 
-        # WACC needs Cost of Equity and Cost of Debt 
+        #variables needed:
+        # WACC needs Cost of Equity and Cost of Debt
 
-        #Risk Free Rate --> 
+        #Risk Free Rate -->
         #Company Beta
         #Market Risk Premium = Market Return - Risk Free Rate
         #Cost of Equity = Risk Free Rate + (Company Beta * Market Risk Premium)
@@ -100,7 +100,7 @@ class DCFbox(AbstractBox):
         #Interest Expense
         #Total Debt
         #Cost of Debt = Interest Expense/Total Debt
-    
+
         #WACC
         # Enterprise Value = Equity Value + Total Debt - Cash
         # Tax Rate = Tax Expense/EBIT
@@ -115,18 +115,18 @@ class DCFbox(AbstractBox):
         # interestExpense = get_financial_stmts(annual,'income')
 
         # Possible workarounds: use pandas to compile list of dicts for marketValue values for easier reading
-        
+
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         #TODO
         #1.) make sure all strings are set as variables eventually (e.g TSLA can and will change)
         #2.) increase readability, probably though some pandas operation we can ask prabu
         #3.) abs value everything?
         #4.) figure out what makes this update every second
-        #5.) accuracy improvement 
-        #5a.) marketReturn is a default number, see if this can be edited. 
+        #5.) accuracy improvement
+        #5a.) marketReturn is a default number, see if this can be edited.
 
 
-        # Cost of Equity 
+        # Cost of Equity
         riskFreeRate = (FVXdata.get('^FVX').get('prices')[len(FVXdata.get('^FVX').get('prices'))-1].get('close'))/100
         print ("riskFreeRate: "+str(riskFreeRate))
         beta = tickerdataSummary.get('TSLA').get('beta') #yf get_beta()
@@ -137,15 +137,15 @@ class DCFbox(AbstractBox):
         previousMarketValue = GSPCdata.get('^GSPC').get('regularMarketOpen') #these two may require a bit of sorting
         marketReturn = .098 #((currentMarketValue-previousMarketValue)/abs(previousMarketValue))
         print ("marketReturn: "+str(marketReturn))
-    
+
         marketRiskPremium = marketReturn - riskFreeRate
         print ("marketRiskPremium: "+str(marketRiskPremium))
 
         costOfEquity = riskFreeRate + (beta*marketRiskPremium)
         print ("costOfEquity: "+str(costOfEquity))
-        
+
         tickerDateIncome = str(list(tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].keys())[0]) #
-        tickerDateBalance = str(list(tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].keys())[0]) 
+        tickerDateBalance = str(list(tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].keys())[0])
 
         #Cost of Debt
         interestExpense = abs(tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('interestExpense')) #COMPLETED tickerdata
@@ -169,8 +169,8 @@ class DCFbox(AbstractBox):
         equityWeight = equityValue/enterpriseValue
         debtWeight = totalDebt/enterpriseValue
 
-        taxExpense = tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('incomeTaxExpense') #COMPLETE 
-        
+        taxExpense = tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('incomeTaxExpense') #COMPLETE
+
         taxRate = taxExpense/ebit
         WACC = (equityWeight*costOfEquity)+(debtWeight*costofDebt*(1-taxRate))
         print ("WACC: "+str(WACC))
@@ -182,9 +182,9 @@ class DCFbox(AbstractBox):
         # FCFF Calculation
         # = EBIT - taxes + (depreciation+amortization) - capital expenditure - change in net working capital (change in NWC)
         # change in NWC = (this year current assets - this year current liabilities) - (last year current assets - last year current liabilities)
+
         pass
 if __name__ == "__main__":
     # send to output
     #stocks for testing: GME, AMC, TSLA
-    pass 
-
+    pass

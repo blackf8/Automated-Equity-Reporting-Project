@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from yahoofinancials import YahooFinancials
 import time
+pd.set_option('display.max_columns',50)
 
 #checks if key exists in dict, if so return corresponding val
 def in_dict(dict, key):
@@ -10,6 +11,11 @@ def in_dict(dict, key):
 		return dict[key]
 	else:
 		return None
+
+def format_float(value):
+	return f'{value:,.2f}'
+
+pd.options.display.float_format = '{:,.2f}'.format
 
 def get_stats(financials, tickers):
 	company_key_statistics_data = financials.get_key_statistics_data() #includes profit margins, forward eps, yearly change etc.
@@ -45,7 +51,7 @@ def get_sheet(financials, tickers, period, sheetType):
 		df = df.append(data, ignore_index = True)
 	return df
 #returns stock price data for ticker symbol
-def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
+def get_stock_price_data_withPD(financials, tickers, start_data, end_date, period):
 	#gets historical daily stock price of company
 	historical_stock_prices_data = financials.get_historical_price_data(start_date, end_date, period)
 	company_data = historical_stock_prices_data[tickers]
@@ -161,35 +167,35 @@ if __name__ == "__main__":
 	financials = YahooFinancials(tickers)
 
 	#done
-	df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
+#	df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
 	#print(df)
-	print('\n\nDaily Stock Table')
-	print(df.columns)
+#	print('\n\nDaily Stock Table')
+#	print(df)
 
 	#done
 	df = get_sheet(financials, tickers, 'quarterly', 'balance')
 	#print(df)
 	print('\n\nBalance Sheet Information')
-	print(df.columns)
+	print(df)
 
 	#done
 	df = get_sheet(financials, tickers, 'quarterly', 'income')
 	#print(df)
 	print('\n\nIncome Sheet Information')
-	print(df.columns)
+	print(df)
 
 
 	#done
-	df = get_stats(financials, tickers)
-	print('\n\nStatistics')
-	for i in df:
-		print(i, df[i])
+#	df = get_stats(financials, tickers)
+#	print('\n\nStatistics')
+#	for i in df:
+#		print(i, df[i])
 
 	#done
-	print('\n\nExtra Api Calls')
-	df = api_calls()
-	for i in df:
-		print(i, df[i])
+#	print('\n\nExtra Api Calls')
+#	df = api_calls()
+#	for i in df:
+#		print(i, df[i])
 
 	print("--- %s seconds ---" % (time.time() - start_time))
 	print("Done.")
@@ -210,6 +216,7 @@ Amortization: cost of things depreciating
 Additional expenses bsides interest / tax
 
 Net Income: Profit after all costs
+
 Cash Flow: Movement of money within a company
 Think of a company as a bond.
 Cash Flow = EBIT
@@ -220,7 +227,9 @@ Cash Flow = EBIT
 
 Unlevered Cash Flow: aka raw cash flow
 Once you take this raw cash flow you need to discount it
-Old money is worth more.
+
+Old money is worth more. 
+
 
 WACC: weight_{equity} * cost of equity + weight_debt * cost of debt
 weight_{equity} = Equity Value/(Equity Value + Debt Value)
@@ -235,13 +244,9 @@ Cost of Debt = Interest Expense / Total Debt
 Overall cost of the company you are gonna invest in
 
 Terminal Value: Company will grow until the terminal value and then grow at a steady rate (2-3%)
-Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
-Present Value of Company = Sum of Cash flows + Perpetual Growth
-
-
-Terminal Value: Company will grow until the terminal value and then grow at a steady rate (2-3%)
 
 Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
 
 Present Value of Company = Sum of Cash flows + Perpetual Growth
+
 '''
