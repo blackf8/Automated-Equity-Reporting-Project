@@ -45,7 +45,7 @@ def get_sheet(financials, tickers, period, sheetType):
 		df = df.append(data, ignore_index = True)
 	return df
 #returns stock price data for ticker symbol
-def get_stock_price_data_withPD(financials, tickers, start_data, end_date, period):
+def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
 	#gets historical daily stock price of company
 	historical_stock_prices_data = financials.get_historical_price_data(start_date, end_date, period)
 	company_data = historical_stock_prices_data[tickers]
@@ -202,7 +202,6 @@ Revenue: Price * Quantity of goods
 Cost of Revenue: Cost of goods
 Gross Income : Cost of Revenue - Net Income
 
-
 Operating Income: Profit before taxes / other expenses
 Also known as EBIT: Earnings Before Interest and Tax
 EBITDA: Depreciation Amortization
@@ -211,7 +210,6 @@ Amortization: cost of things depreciating
 Additional expenses bsides interest / tax
 
 Net Income: Profit after all costs
-
 Cash Flow: Movement of money within a company
 Think of a company as a bond.
 Cash Flow = EBIT
@@ -235,6 +233,11 @@ Market Return: S&P annual return
 Risk Free Investment: Usually use 10Y Treasury Yield(yahoo finance)
 Cost of Debt = Interest Expense / Total Debt
 Overall cost of the company you are gonna invest in
+
+Terminal Value: Company will grow until the terminal value and then grow at a steady rate (2-3%)
+Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
+Present Value of Company = Sum of Cash flows + Perpetual Growth
+
 
 Terminal Value: Company will grow until the terminal value and then grow at a steady rate (2-3%)
 
