@@ -1,3 +1,3 @@
 # Automated-Equity-Research-Project-AER-
 
-Test
+Currently calcWACC is working, but only under TSLA. 
