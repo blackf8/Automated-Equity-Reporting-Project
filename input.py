@@ -22,6 +22,16 @@ def get_stats(financials, tickers):
 	return company_key_statistics_data[tickers]
 
 #returns a dataframe obj representing the companies balance sheet
+#To do
+#1.) show more years
+#2.) respond accurately to period parameter
+#3.) add cash to possible sheets
+#4.) add multiple companies 
+#5.) misaligned possible data values
+#
+#
+#implement yf.get_summary_data(financials,reformat=True), refer to yahooPrintTeset.py for how it works.
+#
 def get_sheet(financials, tickers, period, sheetType):
 	title = ''
 	if(sheetType == 'balance'):
@@ -46,16 +56,21 @@ def get_sheet(financials, tickers, period, sheetType):
 		for key in balance_sheet_contents:
 			val = in_dict(tmp[i][date], key)
 			data[key] = val
-
 		#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
 		df = df.append(data, ignore_index = True)
 	return df
+
+
+def get_financial_stmt_withPD(financials, tickers, period, finStmtType):
+	financialStmt = financials.get_financial_stmts(tickers,period,finStmtType,reformat=True)	
+
+	pass 
+
 #returns stock price data for ticker symbol
-def get_stock_price_data_withPD(financials, tickers, start_data, end_date, period):
+def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
 	#gets historical daily stock price of company
 	historical_stock_prices_data = financials.get_historical_price_data(start_date, end_date, period)
 	company_data = historical_stock_prices_data[tickers]
-
 	df = pd.DataFrame(data = None, columns = list(company_data["prices"][0].keys()))
 	for x in range(len(company_data['prices'])):
 		tmp = company_data['prices'][x]
@@ -69,10 +84,6 @@ def get_stock_price_data_withPD(financials, tickers, start_data, end_date, perio
 		'formatted_date': tmp['formatted_date']}
 		df = df.append(data, ignore_index = True)
 	return df
-
-def get_financial_stmt_income_withPD():
-    	
-    pass
 
 # def getMarketData():
 # 	tickers = 'MRNA'
@@ -164,22 +175,20 @@ if __name__ == "__main__":
 	print("Starting...")
 	start_time = time.time()
 
-	# tickers = 'TSLA'#'MRNA'
-	# start_date = '2015-11-27'
-	# end_date = '2020-11-27'
-	# financials = YahooFinancials(tickers)
+	tickers = 'TSLA'#'MRNA'
+	start_date = '2015-06-26'
+	end_date = '2021-06-26'
+	financials = YahooFinancials(tickers)
 
 	#done
-#	df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
-	#print(df)
-#	print('\n\nDaily Stock Table')
-#	print(df)
-
-	# #done
-	# df = get_sheet(financials, tickers, 'quarterly', 'balance')
-	# #print(df)
-	# print('\n\nBalance Sheet Information')
+	# df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
 	# print(df)
+
+	#done
+	df = get_sheet(financials, tickers, 'annually', 'income')
+	#print(df)
+	print('\n\nBalance Sheet Information')
+	print(df)
 
 	# #done
 	# df = get_sheet(financials, tickers, 'quarterly', 'income')
