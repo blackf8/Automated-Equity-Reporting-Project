@@ -201,12 +201,14 @@ if __name__ == "__main__":
 Revenue: Price * Quantity of goods
 Cost of Revenue: Cost of goods
 Gross Income : Cost of Revenue - Net Income
+
 Operating Income: Profit before taxes / other expenses
 Also known as EBIT: Earnings Before Interest and Tax
 EBITDA: Depreciation Amortization
 Depreciation: cost of stuff that goes down
 Amortization: cost of things depreciating
 Additional expenses bsides interest / tax
+
 Net Income: Profit after all costs
 Cash Flow: Movement of money within a company
 Think of a company as a bond.
@@ -215,9 +217,11 @@ Cash Flow = EBIT
 + DA
 - Capital Expenditures  (Investments in productive capacitity such as factories or machines)
 - Increase in Non-Cash Working Capital	(Current Assets - Current Liabilitity)
+
 Unlevered Cash Flow: aka raw cash flow
 Once you take this raw cash flow you need to discount it
 Old money is worth more.
+
 WACC: weight_{equity} * cost of equity + weight_debt * cost of debt
 weight_{equity} = Equity Value/(Equity Value + Debt Value)
 weight_debt = Debt Value/(Equity Value + Debt Value)
@@ -229,7 +233,15 @@ Market Return: S&P annual return
 Risk Free Investment: Usually use 10Y Treasury Yield(yahoo finance)
 Cost of Debt = Interest Expense / Total Debt
 Overall cost of the company you are gonna invest in
+
 Terminal Value: Company will grow until the terminal value and then grow at a steady rate (2-3%)
 Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
+Present Value of Company = Sum of Cash flows + Perpetual Growth
+
+
+Terminal Value: Company will grow until the terminal value and then grow at a steady rate (2-3%)
+
+Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
+
 Present Value of Company = Sum of Cash flows + Perpetual Growth
 '''
