@@ -176,7 +176,13 @@ class DCFbox(AbstractBox):
         print ("WACC: "+str(WACC))
         return WACC
 
-    def calcFCFF(self):
+    def calcFCFF(self): 
+        # EBIT Calculation
+        # = Revenue - Cost of goods sold - Operating Expenses 
+        # FCFF Calculation
+        # = EBIT - taxes + (depreciation+amortization) - capital expenditure - change in net working capital (change in NWC)
+        # change in NWC = (this year current assets - this year current liabilities) - (last year current assets - last year current liabilities)
+
         pass
 if __name__ == "__main__":
     # send to output

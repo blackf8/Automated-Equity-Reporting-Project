@@ -208,7 +208,6 @@ Revenue: Price * Quantity of goods
 Cost of Revenue: Cost of goods
 Gross Income : Cost of Revenue - Net Income
 
-
 Operating Income: Profit before taxes / other expenses
 Also known as EBIT: Earnings Before Interest and Tax
 EBITDA: Depreciation Amortization
@@ -228,7 +227,9 @@ Cash Flow = EBIT
 
 Unlevered Cash Flow: aka raw cash flow
 Once you take this raw cash flow you need to discount it
+
 Old money is worth more. 
+
 
 WACC: weight_{equity} * cost of equity + weight_debt * cost of debt
 weight_{equity} = Equity Value/(Equity Value + Debt Value)
@@ -247,4 +248,5 @@ Terminal Value: Company will grow until the terminal value and then grow at a st
 Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
 
 Present Value of Company = Sum of Cash flows + Perpetual Growth
+
 '''
