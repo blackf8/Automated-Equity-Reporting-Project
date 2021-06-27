@@ -22,6 +22,7 @@ def getMarketData():
 	company_earnings_data = financials.get_stock_earnings_data() #historical eps only for 1 year span
 #	get_earnings_data(company_earnings_data[tickers])
 
+
 	company_dividend_yield = financials.get_dividend_yield() #current dividends yield
 	company_dividend = financials.get_dividend_rate() #current dividends rate
 	company_avg_div_yield_1year = financials.get_annual_avg_div_yield()	#average 1 year div yield
@@ -53,7 +54,7 @@ def get_Div_data(company_data):
 	keyList = list(div_date_data.keys())
 	print("Dividends Data")
 	for date in keyList:
-		div_price = div_date_data[x]['amount']
+		div_price = div_date_data[date]['amount']
 		print(str(date) + ": " + str(div_price))
 
 def get_stock_price_data(company_data):

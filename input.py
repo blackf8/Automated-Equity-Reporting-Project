@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from yahoofinancials import YahooFinancials
 import time
+pd.set_option('display.max_columns',50)
 
 #checks if key exists in dict, if so return corresponding val
 def in_dict(dict, key):
@@ -10,6 +11,11 @@ def in_dict(dict, key):
 		return dict[key]
 	else:
 		return None
+
+def format_float(value):
+	return f'{value:,.2f}'
+
+pd.options.display.float_format = '{:,.2f}'.format
 
 def get_stats(financials, tickers):
 	company_key_statistics_data = financials.get_key_statistics_data() #includes profit margins, forward eps, yearly change etc.
@@ -161,35 +167,35 @@ if __name__ == "__main__":
 	financials = YahooFinancials(tickers)
 
 	#done
-	df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
+#	df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
 	#print(df)
-	print('\n\nDaily Stock Table')
-	print(df.columns)
+#	print('\n\nDaily Stock Table')
+#	print(df)
 
 	#done
 	df = get_sheet(financials, tickers, 'quarterly', 'balance')
 	#print(df)
 	print('\n\nBalance Sheet Information')
-	print(df.columns)
+	print(df)
 
 	#done
 	df = get_sheet(financials, tickers, 'quarterly', 'income')
 	#print(df)
 	print('\n\nIncome Sheet Information')
-	print(df.columns)
+	print(df)
 
 
 	#done
-	df = get_stats(financials, tickers)
-	print('\n\nStatistics')
-	for i in df:
-		print(i, df[i])
+#	df = get_stats(financials, tickers)
+#	print('\n\nStatistics')
+#	for i in df:
+#		print(i, df[i])
 
 	#done
-	print('\n\nExtra Api Calls')
-	df = api_calls()
-	for i in df:
-		print(i, df[i])
+#	print('\n\nExtra Api Calls')
+#	df = api_calls()
+#	for i in df:
+#		print(i, df[i])
 
 	print("--- %s seconds ---" % (time.time() - start_time))
 	print("Done.")
