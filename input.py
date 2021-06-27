@@ -70,101 +70,104 @@ def get_stock_price_data_withPD(financials, tickers, start_data, end_date, perio
 		df = df.append(data, ignore_index = True)
 	return df
 
+def get_financial_stmt_income_withPD():
+    	
+    pass
 
-def getMarketData():
-	tickers = 'MRNA'
-	financials = YahooFinancials(tickers)
+# def getMarketData():
+# 	tickers = 'MRNA'
+# 	financials = YahooFinancials(tickers)
 
-	#	company_stock_price = financials.get_stock_price_data() #gets stock price information
+# 	#	company_stock_price = financials.get_stock_price_data() #gets stock price information
 
-	historical_stock_prices_data = financials.get_historical_price_data('2015-11-27', '2020-11-27', 'daily') #gets historical daily stock price of company
-	#	get_Div_data(historical_stock_prices_data[tickers])
-	get_stock_price_data_withPD(historical_stock_prices_data[tickers])
-	#	company_balance_sheet_data_qt = financials.get_financial_stmts('quarterly', 'balance') #get balance sheet
-	#	company_income_statement_data_qt = financials.get_financial_stmts('quarterly', 'income') #get income statement
+# 	historical_stock_prices_data = financials.get_historical_price_data('2015-11-27', '2020-11-27', 'daily') #gets historical daily stock price of company
+# 	#	get_Div_data(historical_stock_prices_data[tickers])
+# 	get_stock_price_data_withPD(historical_stock_prices_data[tickers])
+# 	#	company_balance_sheet_data_qt = financials.get_financial_stmts('quarterly', 'balance') #get balance sheet
+# 	#	company_income_statement_data_qt = financials.get_financial_stmts('quarterly', 'income') #get income statement
 
-	#company_key_statistics_data = financials.get_key_statistics_data() #includes profit margins, forward eps, yearly change etc.
-	#	get_forward_pe(company_key_statistics_data[tickers])
-	#	get_trailing_eps(company_key_statistics_data[tickers])
-	#	get_foward_eps(company_key_statistics_data[tickers])
-	#	get_ytdReturn(company_key_statistics_data[tickers])
+# 	#company_key_statistics_data = financials.get_key_statistics_data() #includes profit margins, forward eps, yearly change etc.
+# 	#	get_forward_pe(company_key_statistics_data[tickers])
+# 	#	get_trailing_eps(company_key_statistics_data[tickers])
+# 	#	get_foward_eps(company_key_statistics_data[tickers])
+# 	#	get_ytdReturn(company_key_statistics_data[tickers])
 
-	#1company_earnings_data = financials.get_stock_earnings_data() #historical eps only for 1 year span
-	#	get_earnings_data(company_earnings_data[tickers])
+# 	#1company_earnings_data = financials.get_stock_earnings_data() #historical eps only for 1 year span
+# 	#	get_earnings_data(company_earnings_data[tickers])
 
-	#1company_dividend_yield = financials.get_dividend_yield() #current dividends yield
-	#1company_dividend = financials.get_dividend_rate() #current dividends rate
-	#1company_avg_div_yield_1year = financials.get_annual_avg_div_yield()	#average 1 year div yield
-	#1company_avg_div_yield_5year = financials.get_five_yr_avg_div_yield()	#average 5 year div yield
-	#1company_eps = financials.get_earnings_per_share() #current eps
-	#1company_pe = financials.get_pe_ratio()	#current pe ratio
-	#1company_beta = financials.get_beta() #current beta
-	#1company_current_stock_price = financials.get_current_price() #current stock price
+# 	#1company_dividend_yield = financials.get_dividend_yield() #current dividends yield
+# 	#1company_dividend = financials.get_dividend_rate() #current dividends rate
+# 	#1company_avg_div_yield_1year = financials.get_annual_avg_div_yield()	#average 1 year div yield
+# 	#1company_avg_div_yield_5year = financials.get_five_yr_avg_div_yield()	#average 5 year div yield
+# 	#1company_eps = financials.get_earnings_per_share() #current eps
+# 	#1company_pe = financials.get_pe_ratio()	#current pe ratio
+# 	#1company_beta = financials.get_beta() #current beta
+# 	#1company_current_stock_price = financials.get_current_price() #current stock price
 
-	#1company_revenue = financials.get_total_revenue() #current company revenue
-	#1company_operating_income = financials.get_operating_income() #current company operating income
-	#1company_net_income = financials.get_net_income() #current net income
+# 	#1company_revenue = financials.get_total_revenue() #current company revenue
+# 	#1company_operating_income = financials.get_operating_income() #current company operating income
+# 	#1company_net_income = financials.get_net_income() #current net income
 
-	#1company_yearly_high = financials.get_yearly_high()	#get yearly high
-	#1company_yearly_low = financials.get_yearly_low()	#get yearly low
-	#1company_moving_50 = financials.get_50day_moving_avg()	#50 day moving average of stock
-	#1company_moving_200 = financials.get_200day_moving_avg()	#200 day moving average of stock
+# 	#1company_yearly_high = financials.get_yearly_high()	#get yearly high
+# 	#1company_yearly_low = financials.get_yearly_low()	#get yearly low
+# 	#1company_moving_50 = financials.get_50day_moving_avg()	#50 day moving average of stock
+# 	#1company_moving_200 = financials.get_200day_moving_avg()	#200 day moving average of stock
 
-def api_calls():
-	tmp = {}
-	tmp['company_dividend_yield'] = financials.get_dividend_yield() #current dividends yield
-	#print(tmp['company_dividend_yield'])
+# def api_calls():
+# 	tmp = {}
+# 	tmp['company_dividend_yield'] = financials.get_dividend_yield() #current dividends yield
+# 	#print(tmp['company_dividend_yield'])
 
-	tmp['company_dividend'] = financials.get_dividend_rate() #current dividends rate
-	#print(tmp['company_dividend'])
-
-
-	tmp['company_avg_div_yield_1year'] = financials.get_annual_avg_div_yield()	#average 1 year div yield
-	#print(tmp['company_avg_div_yield_1year'])
-
-	tmp['company_avg_div_yield_5year'] = financials.get_five_yr_avg_div_yield()	#average 5 year div yield
-	#print(tmp['company_avg_div_yield_5year'])
+# 	tmp['company_dividend'] = financials.get_dividend_rate() #current dividends rate
+# 	#print(tmp['company_dividend'])
 
 
+# 	tmp['company_avg_div_yield_1year'] = financials.get_annual_avg_div_yield()	#average 1 year div yield
+# 	#print(tmp['company_avg_div_yield_1year'])
 
-	tmp['company_eps'] = financials.get_earnings_per_share() #current eps
-	#print(tmp['company_eps'])
-	tmp['company_pe'] = financials.get_pe_ratio()	#current pe ratio
-	#print(tmp['company_pe'])
-	tmp['company_beta'] = financials.get_beta() #current beta
-	#print(tmp['company_beta'])
-	tmp['company_current_stock_price'] = financials.get_current_price() #current stock price
-	#print(tmp['company_current_stock_price'])
+# 	tmp['company_avg_div_yield_5year'] = financials.get_five_yr_avg_div_yield()	#average 5 year div yield
+# 	#print(tmp['company_avg_div_yield_5year'])
 
 
-	tmp['company_revenue'] = financials.get_total_revenue() #current company revenue
-	#print(tmp['company_revenue'])
-	tmp['company_operating_income'] = financials.get_operating_income() #current company operating income
-	#print(tmp['company_operating_income'])
-	tmp['company_net_income'] = financials.get_net_income() #current net income
-	#print(tmp['company_net_income'])
 
-	tmp['company_yearly_high'] = financials.get_yearly_high()	#get yearly high
-	#print(tmp['company_yearly_high'])
-	tmp['company_yearly_low'] = financials.get_yearly_low()	#get yearly low
-	#print(tmp['company_yearly_low'])
+# 	tmp['company_eps'] = financials.get_earnings_per_share() #current eps
+# 	#print(tmp['company_eps'])
+# 	tmp['company_pe'] = financials.get_pe_ratio()	#current pe ratio
+# 	#print(tmp['company_pe'])
+# 	tmp['company_beta'] = financials.get_beta() #current beta
+# 	#print(tmp['company_beta'])
+# 	tmp['company_current_stock_price'] = financials.get_current_price() #current stock price
+# 	#print(tmp['company_current_stock_price'])
 
-	tmp['company_moving_50'] = financials.get_50day_moving_avg()	#50 day moving average of stock
-	#print(tmp['company_moving_50'])
-	tmp['company_moving_200'] = financials.get_200day_moving_avg()	#200 day moving average of stock
-	#print(tmp['company_moving_200'])
 
-	return tmp
+# 	tmp['company_revenue'] = financials.get_total_revenue() #current company revenue
+# 	#print(tmp['company_revenue'])
+# 	tmp['company_operating_income'] = financials.get_operating_income() #current company operating income
+# 	#print(tmp['company_operating_income'])
+# 	tmp['company_net_income'] = financials.get_net_income() #current net income
+# 	#print(tmp['company_net_income'])
+
+# 	tmp['company_yearly_high'] = financials.get_yearly_high()	#get yearly high
+# 	#print(tmp['company_yearly_high'])
+# 	tmp['company_yearly_low'] = financials.get_yearly_low()	#get yearly low
+# 	#print(tmp['company_yearly_low'])
+
+# 	tmp['company_moving_50'] = financials.get_50day_moving_avg()	#50 day moving average of stock
+# 	#print(tmp['company_moving_50'])
+# 	tmp['company_moving_200'] = financials.get_200day_moving_avg()	#200 day moving average of stock
+# 	#print(tmp['company_moving_200'])
+
+# 	return tmp
 
 if __name__ == "__main__":
 
 	print("Starting...")
 	start_time = time.time()
 
-	tickers = 'TSLA'#'MRNA'
-	start_date = '2015-11-27'
-	end_date = '2020-11-27'
-	financials = YahooFinancials(tickers)
+	# tickers = 'TSLA'#'MRNA'
+	# start_date = '2015-11-27'
+	# end_date = '2020-11-27'
+	# financials = YahooFinancials(tickers)
 
 	#done
 #	df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
@@ -172,17 +175,17 @@ if __name__ == "__main__":
 #	print('\n\nDaily Stock Table')
 #	print(df)
 
-	#done
-	df = get_sheet(financials, tickers, 'quarterly', 'balance')
-	#print(df)
-	print('\n\nBalance Sheet Information')
-	print(df)
+	# #done
+	# df = get_sheet(financials, tickers, 'quarterly', 'balance')
+	# #print(df)
+	# print('\n\nBalance Sheet Information')
+	# print(df)
 
-	#done
-	df = get_sheet(financials, tickers, 'quarterly', 'income')
-	#print(df)
-	print('\n\nIncome Sheet Information')
-	print(df)
+	# #done
+	# df = get_sheet(financials, tickers, 'quarterly', 'income')
+	# #print(df)
+	# print('\n\nIncome Sheet Information')
+	# print(df)
 
 
 	#done
