@@ -228,7 +228,7 @@ Cash Flow = EBIT
 
 Unlevered Cash Flow: aka raw cash flow
 Once you take this raw cash flow you need to discount it
-Old money is worth more.
+Old money is worth more. 
 
 WACC: weight_{equity} * cost of equity + weight_debt * cost of debt
 weight_{equity} = Equity Value/(Equity Value + Debt Value)
