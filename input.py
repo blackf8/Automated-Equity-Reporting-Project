@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from yahoofinancials import YahooFinancials
 import time
+import datetime
 pd.set_option('display.max_columns',50)
 
 #checks if key exists in dict, if so return corresponding val
@@ -23,21 +24,32 @@ def get_stats(financials, tickers):
 
 #returns a dataframe obj representing the companies balance sheet
 #To do
-#1.) show more years
-#2.) respond accurately to period parameter
-#3.) add cash to possible sheets
-#4.) add multiple companies 
-#5.) misaligned possible data values
-#
-#
+#1.) show more years [in prog] ???
+	#cant pull all the years without finance plus
+#2.) respond accurately to period parameter [check]
+#3.) add cash to possible sheets [check]
+#4.) add multiple companies ?
+	# Adjust code to keep in mind we want to run on multiple companies.
+	# focusing on fetching the data (put on burner for now.)
+#5.) misaligned possible data values ? --> dict idea. [check]
+	#detect if a value is missing.   } Something we need to look into as we use data.
+	#work towards fix if possibe.    }
+
+
 #implement yf.get_summary_data(financials,reformat=True), refer to yahooPrintTeset.py for how it works.
 #
 def get_sheet(financials, tickers, period, sheetType):
 	title = ''
 	if(sheetType == 'balance'):
-		title = 'balanceSheetHistoryQuarterly'
+		title = 'balanceSheetHistory'
+	elif(sheetType == 'cash'):
+		title = 'cashflowStatementHistory'
 	else:
-		title = 'incomeStatementHistoryQuarterly'
+		title = 'incomeStatementHistory'
+
+
+	if(period == 'quarterly'):
+		title = title + 'Quarterly'
 
 	company_balance_sheet_data_qt = financials.get_financial_stmts(period, sheetType) #get balance sheet
 
@@ -58,13 +70,12 @@ def get_sheet(financials, tickers, period, sheetType):
 			data[key] = val
 		#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
 		df = df.append(data, ignore_index = True)
-	return df
+	return df, tmp
 
 
 def get_financial_stmt_withPD(financials, tickers, period, finStmtType):
-	financialStmt = financials.get_financial_stmts(tickers,period,finStmtType,reformat=True)	
-
-	pass 
+	financialStmt = financials.get_financial_stmts(tickers,period,finStmtType,reformat=True)
+	pass
 
 #returns stock price data for ticker symbol
 def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
@@ -83,7 +94,7 @@ def get_stock_price_data_withPD(financials, tickers, start_date, end_date, perio
 		'adjclose': tmp['adjclose'],
 		'formatted_date': tmp['formatted_date']}
 		df = df.append(data, ignore_index = True)
-	return df
+	return df, list(company_data["prices"])
 
 # def getMarketData():
 # 	tickers = 'MRNA'
@@ -175,43 +186,53 @@ if __name__ == "__main__":
 	print("Starting...")
 	start_time = time.time()
 
-	tickers = 'TSLA'#'MRNA'
-	start_date = '2015-06-26'
-	end_date = '2021-06-26'
+	tickers = 'MSFT'#'MRNA'
+	start_date = '2000-06-26'
+	end_date = '2021-07-02'
+	#end_date = f"{datetime.datetime.now().year}-{datetime.datetime.now().month}-{datetime.datetime.now().day}"
 	financials = YahooFinancials(tickers)
 
 	#done
-	# df = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
-	# print(df)
+	df, prices = get_stock_price_data_withPD(financials, tickers, start_date, end_date, 'daily')
 
 	#done
-	df = get_sheet(financials, tickers, 'annually', 'income')
-	#print(df)
+	df, sheet = get_sheet(financials, tickers, 'annual', 'income')
 	print('\n\nBalance Sheet Information')
-	print(df)
+	#print(df)
 
 	# #done
-	# df = get_sheet(financials, tickers, 'quarterly', 'income')
-	# #print(df)
-	# print('\n\nIncome Sheet Information')
-	# print(df)
+	df, sheet = get_sheet(financials, tickers, 'quarterly', 'income')
+	print('\n\nIncome Sheet Information')
+	#print(df)
 
 
-	#done
-#	df = get_stats(financials, tickers)
-#	print('\n\nStatistics')
-#	for i in df:
-#		print(i, df[i])
+	# #done
+	df, sheet = get_sheet(financials, tickers, 'annual', 'cash')
+	print('\n\nIncome Sheet Information')
+	print(df)
 
-	#done
-#	print('\n\nExtra Api Calls')
-#	df = api_calls()
-#	for i in df:
-#		print(i, df[i])
+	#company_balance_sheet_data_qt = financials.get_financial_stmts('annual', 'cash') #get balance sheet
+	#print(company_balance_sheet_data_qt)
+
+
+	#company_balance_sheet_data_qt = financials.get_financial_stmts('annual', 'cash') #get balance sheet
+	#print(company_balance_sheet_data_qt)
+	"""
+	df = get_stats(financials, tickers)
+	print('\n\nStatistics')
+	for i in df:
+		print(i, df[i])
+	"""
+
+	"""
+	print('\n\nExtra Api Calls')
+	df = api_calls()
+	for i in df:
+		print(i, df[i])
 
 	print("--- %s seconds ---" % (time.time() - start_time))
 	print("Done.")
-
+	"""
 
 
 
@@ -240,7 +261,7 @@ Cash Flow = EBIT
 Unlevered Cash Flow: aka raw cash flow
 Once you take this raw cash flow you need to discount it
 
-Old money is worth more. 
+Old money is worth more.
 
 
 WACC: weight_{equity} * cost of equity + weight_debt * cost of debt
@@ -260,5 +281,4 @@ Terminal Value: Company will grow until the terminal value and then grow at a st
 Perpetual Growth: Last calculated cash flow*(1 + growth rate g)/(WACC - growth rate g)
 
 Present Value of Company = Sum of Cash flows + Perpetual Growth
-
 '''
