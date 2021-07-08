@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod, ABCMeta
+from yahoofinancials import YahooFinancials as yf
+import pandas as pd
+import numpy as np
 import heapdict
 #import test
 import input
@@ -77,7 +80,7 @@ class PriceBox(AbstractBox):
 
 class DCFbox(AbstractBox):
     def __init__(self,financials):
-        self.__financials = financials
+        self.__financials = yf('TSLA')
         #WACC stuff here
     def tickerEvaluator(self):
         pass
@@ -177,12 +180,39 @@ class DCFbox(AbstractBox):
         return WACC
 
     def calcFCFF(self): 
+        def calcDeltaNWC(self):
+            balanceSheet = input.get_sheet(self.__financials,'TSLA','annual','balance')
+            currentAssets = balanceSheet.loc[:,'totalCurrentAssets']
+            currentLiabilities = balanceSheet.loc[:,'totalCurrentLiabilities']
+            # changeInNWC = (currentAssetsY1-currentLiabilitiesY1)-(currentAssetsY0-currentLiabilitiesY0)
+            changeInNWC = pd.DataFrame(columns=['changeInNWC'])
+            #for now, projections are hardcoded, in the future, we will be reading them off a csv file.
+
+
         # EBIT Calculation
         # = Revenue - Cost of goods sold - Operating Expenses 
         # FCFF Calculation
         # = EBIT - taxes + (depreciation+amortization) - capital expenditure - change in net working capital (change in NWC)
         # change in NWC = (this year current assets - this year current liabilities) - (last year current assets - last year current liabilities)
+        
+        incomeStatement = input.get_sheet(self.__financials,'TSLA','annual','income')
+        cashflowStatement = input.get_sheet(self.__financials,'TSLA','annual','cash')
+        revenue = incomeStatement.loc[:,'totalRevenue']
+        costOfGoodsSold = incomeStatement.loc[:,'costOfRevenue']
+        grossProfit = incomeStatement.loc[:,'grossProfit']
+        depreciation = cashflowStatement.loc[:,'depreciation']
+        sgaExpenses = incomeStatement.loc[:,'sellingGeneralAdministrative']
+        incomeTaxExpense = incomeStatement.loc[:,'incomeTaxExpense']
+        capex = cashflowStatement.loc[:,'capitalExpenditures']
+        changeInNWC = 0 #complete this step later, cause this is a pain
 
+        ebitda = revenue - costOfGoodsSold - sgaExpenses
+        ebit =  ebitda - depreciation #different from ebit for more carful calculations. 
+        ebiat = ebit - incomeTaxExpense
+        
+        
+        unleveredFCF = ebiat + depreciation - capex - changeInNWC
+        # 
         pass
 if __name__ == "__main__":
     # send to output

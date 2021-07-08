@@ -23,4 +23,5 @@ tickerdataSummary = yf.get_summary_data(financialsTicker,reformat=True)
 
 box1 = DCFbox(financialsTicker)
 
-box1.calcWACC(FVXdata, GSPCdata, tickerdataIncome, tickerdataBalance, tickerdataCash, tickerdataSummary)
+# box1.calcWACC(FVXdata, GSPCdata, tickerdataIncome, tickerdataBalance, tickerdataCash, tickerdataSummary)
+box1.calcFCFF()

@@ -44,13 +44,14 @@ def get_sheet(financials, tickers, period, sheetType):
 		title = 'balanceSheetHistory'
 	elif(sheetType == 'cash'):
 		title = 'cashflowStatementHistory'
-	else:
+	elif(sheetType == 'income'):
 		title = 'incomeStatementHistory'
-
+	else: 
+		return ('Incorect SheetType') #change in future to more solid error type
 
 	if(period == 'quarterly'):
 		title = title + 'Quarterly'
-
+ 
 	company_balance_sheet_data_qt = financials.get_financial_stmts(period, sheetType) #get balance sheet
 
 	df = pd.DataFrame(data = None, columns = ['date'])
@@ -70,7 +71,7 @@ def get_sheet(financials, tickers, period, sheetType):
 			data[key] = val
 		#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
 		df = df.append(data, ignore_index = True)
-	return df, tmp
+	return df
 
 
 def get_financial_stmt_withPD(financials, tickers, period, finStmtType):
