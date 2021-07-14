@@ -73,6 +73,10 @@ def get_sheet(financials, tickers, period, sheetType):
 		df = df.append(data, ignore_index = True)
 	return df
 
+def get_key_statistics (financials,tickers):
+	
+	df = pd.DataFrame()
+	
 
 def get_financial_stmt_withPD(financials, tickers, period, finStmtType):
 	financialStmt = financials.get_financial_stmts(tickers,period,finStmtType,reformat=True)

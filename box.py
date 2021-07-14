@@ -81,6 +81,7 @@ class PriceBox(AbstractBox):
 class DCFbox(AbstractBox):
     def __init__(self,financials):
         self.__financials = yf('TSLA')
+        self.__WACC = None
         #WACC stuff here
     def tickerEvaluator(self):
         pass
@@ -131,40 +132,40 @@ class DCFbox(AbstractBox):
 
         # Cost of Equity
         riskFreeRate = (FVXdata.get('^FVX').get('prices')[len(FVXdata.get('^FVX').get('prices'))-1].get('close'))/100
-        print ("riskFreeRate: "+str(riskFreeRate))
+        # print ("riskFreeRate: "+str(riskFreeRate))
         beta = tickerdataSummary.get('TSLA').get('beta') #yf get_beta()
-        print ("beta: "+str(beta))
+        # print ("beta: "+str(beta))
 
         #marketReturn calc
         currentMarketValue = GSPCdata.get('^GSPC').get('regularMarketOpen')
         previousMarketValue = GSPCdata.get('^GSPC').get('regularMarketOpen') #these two may require a bit of sorting
         marketReturn = .098 #((currentMarketValue-previousMarketValue)/abs(previousMarketValue))
-        print ("marketReturn: "+str(marketReturn))
+        # print ("marketReturn: "+str(marketReturn))
 
         marketRiskPremium = marketReturn - riskFreeRate
-        print ("marketRiskPremium: "+str(marketRiskPremium))
+        # print ("marketRiskPremium: "+str(marketRiskPremium))
 
         costOfEquity = riskFreeRate + (beta*marketRiskPremium)
-        print ("costOfEquity: "+str(costOfEquity))
+        # print ("costOfEquity: "+str(costOfEquity))
 
         tickerDateIncome = str(list(tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].keys())[0]) #
         tickerDateBalance = str(list(tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].keys())[0])
 
         #Cost of Debt
         interestExpense = abs(tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('interestExpense')) #COMPLETED tickerdata
-        print ("interestExpense: "+str(interestExpense))
+        # print ("interestExpense: "+str(interestExpense))
 
         longTermDebt = tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].get(tickerDateBalance).get('longTermDebt') #COMPLETE
         shortLongTermDebt = tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].get(tickerDateBalance).get('shortLongTermDebt') #COMPLETE
         totalDebt = shortLongTermDebt + longTermDebt
         costofDebt = interestExpense/totalDebt
 
-        print ("totalDebt: "+str(totalDebt))
-        print ("costofDebt: "+str(+costofDebt))
+        # print ("totalDebt: "+str(totalDebt))
+        # print ("costofDebt: "+str(+costofDebt))
 
         #WACC calc
         ebit = tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('ebit') #COMPLETE
-        print ("ebit: "+str(ebit))
+        # print ("ebit: "+str(ebit))
 
         equityValue = tickerdataSummary.get('TSLA').get("marketCap")
         cash = tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].get(tickerDateBalance).get('cash') #COMPLETE
@@ -176,7 +177,7 @@ class DCFbox(AbstractBox):
 
         taxRate = taxExpense/ebit
         WACC = (equityWeight*costOfEquity)+(debtWeight*costofDebt*(1-taxRate))
-        print ("WACC: "+str(WACC))
+        # print ("WACC: "+str(WACC))
         return WACC
 
     def calcFCFF(self): 
@@ -197,6 +198,7 @@ class DCFbox(AbstractBox):
         
         incomeStatement = input.get_sheet(self.__financials,'TSLA','annual','income')
         cashflowStatement = input.get_sheet(self.__financials,'TSLA','annual','cash')
+        balanceSheet = input.get_sheet(self.__financials,'TSLA', 'annual','balance')
         revenue = incomeStatement.loc[:,'totalRevenue']
         costOfGoodsSold = incomeStatement.loc[:,'costOfRevenue']
         grossProfit = incomeStatement.loc[:,'grossProfit']
@@ -204,16 +206,132 @@ class DCFbox(AbstractBox):
         sgaExpenses = incomeStatement.loc[:,'sellingGeneralAdministrative']
         incomeTaxExpense = incomeStatement.loc[:,'incomeTaxExpense']
         capex = cashflowStatement.loc[:,'capitalExpenditures']
-        changeInNWC = 0 #complete this step later, cause this is a pain
-
+        netReceivables = balanceSheet.loc[:,'netReceivables']
+        inventory = balanceSheet.loc[:,'inventory']
+        totalCurrentLiabilities = balanceSheet.loc[:,'totalCurrentLiabilities']
+        cash = balanceSheet.loc[:,'cash']
+        shortTermDebt = balanceSheet.loc[:,'shortLongTermDebt']
+        longTermDebt = balanceSheet.loc[:,'longTermDebt']
+        totalDebt = shortTermDebt + longTermDebt
+        sharesOutstanding = 0
+        #for income tax purposess
+        ebit = incomeStatement.loc[:,'ebit']
+        
+        yearsProjected = ['2020','2021','2022','2023','2024','2025'] 
+        
+        #can be optimized for accuracy using Rosenbaum & Pearl DCF changeinNWC method (calculate and project ratios)
+        changeInNWC = []
+        changeInNWC.append(0)
+        #if year x is the current year, then change in net working capital for year x = ((current assets of year x) - (current liabilities of year x-debt)) - ((current assets of year x-1 - cash) - (current liabilities of year x-1-debt))
+        #change in: all under balance sheet
+        #netReceivables
+        #inventory
+        #totalCurrentLiabilities
+                
+        for i in range(3):
+            #old - new
+            #((old_netR+old_inv)-old_totalCurL)-((new_netR+new_inv)-new_totalCurL)
+            #extend this for loops with another loop later for more companies 
+            tmp = abs(((netReceivables[i]+inventory[i])-totalCurrentLiabilities[i]))-abs(((netReceivables[i+1]+inventory[i+1])-totalCurrentLiabilities[i+1]))
+            # changeInNWC.append(tmp)
+            changeInNWC.append(abs(tmp))
+        changeInNWC = pd.Series(changeInNWC)
+        
         ebitda = revenue - costOfGoodsSold - sgaExpenses
-        ebit =  ebitda - depreciation #different from ebit for more carful calculations. 
+        ebit =  ebitda - depreciation #different from ebit for more careful calculations. 
         ebiat = ebit - incomeTaxExpense
         
-        
         unleveredFCF = ebiat + depreciation - capex - changeInNWC
-        # 
-        pass
+        #incomeTaxRate calculations; IMPROVE ACCURACY OF TAX RATE PROJECTIONS
+        incomeTaxRate = incomeTaxExpense/ebit
+        tempTaxRate = incomeTaxRate.copy(deep=True)
+
+        for index, value in incomeTaxRate.items():
+            tempTaxRate.loc[index] = max(0,value)
+
+        incomeTaxRate = tempTaxRate
+        
+        #this needs to be like 3 for loops of csv calls, projecting per company, then projecting ever company
+        #will be fast
+        starterRevenue = list(revenue)
+        growthRates = [.1231,.0432,.069,.061,.003,.006] #get these numbers from the excel sheet; csv file
+        projRevenues = []
+        tempValue = starterRevenue[0]
+        projRevenues.append(tempValue)
+        for i in range (5):
+            tempValue = tempValue*(1+growthRates[i])
+            projRevenues.append(tempValue)
+
+        projRevenuesDF = pd.DataFrame(columns=yearsProjected)
+        projRevenuesDF.loc[0] = projectedRevenues#loc will be set to i of for loop in future, dw.
+        # print(projectedRevenuesDF.iloc[0][0]) # [[0],[0]] gives a dataframe, but this gives just a number
+        print(projRevenuesDF)
+        #Value Projections
+        actualValues = []
+        projectedValues = []
+        
+        actualValues.append(costOfGoodsSold)
+        actualValues.append(sgaExpenses)
+        actualValues.append(depreciation)
+        actualValues.append(capex)
+        actualValues.append(changeInNWC)
+        actualValues.append(incomeTaxRate)
+
+        for actual in actualValues:
+            tempActual = actual.copy(deep=True)
+            tempProj = pd.Series()
+            for i in range(5):
+                avgSeries = tempActual.copy(deep=True)
+                avgSeries = avgSeries.loc[i:int(i+3)]
+                avg = avgSeries.mean()
+                tmpAppend = pd.Series([avg])
+                tempProj = tempProj.append(tmpAppend, ignore_index=True)
+                tempActual = tempActual.append(tmpAppend, ignore_index=True)
+            projectedValues.append(tempProj) #append tempProj for just projections, tempActual includes previous years data along with future projections
+        
+        projCostOfGoodsSold = projectedValues[0]
+        projsgaExpenses = projectedValues[1]
+        projDepreciation = projectedValues[2]
+        projcapex = projectedValues[3]
+        projChangeInNWC = projectedValues[4]
+        projIncomeTaxRate = projectedValues[5]
+
+        # print (projectedValues)
+        # print("Start of actualValues \n")      
+        # print(actualValues)
+        # print("Start of projectedValues \n")
+        # print(projectedValues)
+
+        #projected ebit calculations here
+        projebitda = projRevenuesDF - projCostOfGoodsSold - projsgaExpenses
+        projebit = projebitda - projDepreciation
+        projIncomeTaxExpense = projebit*projIncomeTaxRate
+        projebiat = projebit - projIncomeTaxExpense
+        #end of ebit calc
+
+        projUnleveredFCFF = projebiat + projDepreciation - projcapex - projChangeInNWC
+        
+        #start of Discounted Levered FCFF
+        WACC = self.WACC
+        tmpVal = pd.Series() #((1+WACC)^t)
+        for i in range(5):
+            x = (1+WACC)^(i+1)
+            tmpInsert = pd.Series([x])
+            tmpVal = tmpVal.append(tmpInsert, ignore_index=True)
+        projLeveredFCFF = projUnleveredFCFF/tmpVal
+        #end of Discounted Levered FCFF
+
+        perpetualGrowthRate = .02
+        terminalValue = projLeveredFCFF.iloc[-1]*(x*(1+perpetualGrowthRate))/(WACC-perpetualGrowthRate))
+        enterpriseValue = projectedLeveredFCFF.sum()+terminalValue   
+        equityValue = enterpriseValue + cash - totalDebt 
+        #estimatedSharePrice = equityValue - sharesOutstanding
+        #print (estimatedSharePrice)
+        
+
+    
+
+        
 if __name__ == "__main__":
     # send to output
     #stocks for testing: GME, AMC, TSLA
