@@ -19,8 +19,13 @@ def format_float(value):
 pd.options.display.float_format = '{:,.2f}'.format
 
 def get_stats(financials, tickers):
-	company_key_statistics_data = financials.get_key_statistics_data() #includes profit margins, forward eps, yearly change etc.
-	return company_key_statistics_data[tickers]
+    company_key_statistics_data = financials.get_key_statistics_data() #includes profit margins, forward eps, yearly change etc.
+    samples = []
+    for key in company_key_statistics_data.keys():
+        company_key_statistics_data[key]["Company"] = key
+        samples.append(list(company_key_statistics_data[key].values()))
+    data = pd.DataFrame(samples, columns = company_key_statistics_data[tickers[0]].keys())
+    return data
 
 #returns a dataframe obj representing the companies balance sheet
 #To do
@@ -74,8 +79,65 @@ def get_sheet(financials, tickers, period, sheetType):
 	return df
 
 def get_key_statistics (financials,tickers):
+	keyStats = financials.get_key_statistics_data()
+	features = keyStats.keys()
+	df = pd.DataFrame(columns = features)
 	
-	df = pd.DataFrame()
+# 	{
+#     "AAPL": {
+#         "annualHoldingsTurnover": null,
+#         "enterpriseToRevenue": 2.973,
+#         "beta3Year": null,
+#         "profitMargins": 0.22413999,
+#         "enterpriseToEbitda": 9.652,
+#         "52WeekChange": -0.12707871,
+#         "morningStarRiskRating": null,
+#         "forwardEps": 13.49,
+#         "revenueQuarterlyGrowth": null,
+#         "sharesOutstanding": 4729800192,
+#         "fundInceptionDate": "-",
+#         "annualReportExpenseRatio": null,
+#         "totalAssets": null,
+#         "bookValue": 22.534,
+#         "sharesShort": 44915125,
+#         "sharesPercentSharesOut": 0.0095,
+#         "fundFamily": null,
+#         "lastFiscalYearEnd": 1538179200,
+#         "heldPercentInstitutions": 0.61208,
+#         "netIncomeToCommon": 59531001856,
+#         "trailingEps": 11.91,
+#         "lastDividendValue": null,
+#         "SandP52WeekChange": -0.06475246,
+#         "priceToBook": 6.7582316,
+#         "heldPercentInsiders": 0.00072999997,
+#         "nextFiscalYearEnd": 1601337600,
+#         "yield": null,
+#         "mostRecentQuarter": 1538179200,
+#         "shortRatio": 1,
+#         "sharesShortPreviousMonthDate": "2018-10-31",
+#         "floatShares": 4489763410,
+#         "beta": 1.127094,
+#         "enterpriseValue": 789555511296,
+#         "priceHint": 2,
+#         "threeYearAverageReturn": null,
+#         "lastSplitDate": "2014-06-09",
+#         "lastSplitFactor": "1/7",
+#         "legalType": null,
+#         "morningStarOverallRating": null,
+#         "earningsQuarterlyGrowth": 0.318,
+#         "priceToSalesTrailing12Months": null,
+#         "dateShortInterest": 1543536000,
+#         "pegRatio": 0.98,
+#         "ytdReturn": null,
+#         "forwardPE": 11.289103,
+#         "maxAge": 1,
+#         "lastCapGain": null,
+#         "shortPercentOfFloat": 0.0088,
+#         "sharesShortPriorMonth": 36469092,
+#         "category": null,
+#         "fiveYearAverageReturn": null
+#     }
+# }
 	
 
 def get_financial_stmt_withPD(financials, tickers, period, finStmtType):

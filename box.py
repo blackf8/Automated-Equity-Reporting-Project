@@ -199,6 +199,7 @@ class DCFbox(AbstractBox):
         incomeStatement = input.get_sheet(self.__financials,'TSLA','annual','income')
         cashflowStatement = input.get_sheet(self.__financials,'TSLA','annual','cash')
         balanceSheet = input.get_sheet(self.__financials,'TSLA', 'annual','balance')
+        keyStatements = input.get_stats(self.__financials,['TSLA'])
         revenue = incomeStatement.loc[:,'totalRevenue']
         costOfGoodsSold = incomeStatement.loc[:,'costOfRevenue']
         grossProfit = incomeStatement.loc[:,'grossProfit']
@@ -213,7 +214,7 @@ class DCFbox(AbstractBox):
         shortTermDebt = balanceSheet.loc[:,'shortLongTermDebt']
         longTermDebt = balanceSheet.loc[:,'longTermDebt']
         totalDebt = shortTermDebt + longTermDebt
-        sharesOutstanding = 0
+        sharesOutstanding = keyStatements.loc[:,'sharesOutstanding']
         #for income tax purposess
         ebit = incomeStatement.loc[:,'ebit']
         
@@ -263,9 +264,12 @@ class DCFbox(AbstractBox):
             projRevenues.append(tempValue)
 
         projRevenuesDF = pd.DataFrame(columns=yearsProjected)
-        projRevenuesDF.loc[0] = projectedRevenues#loc will be set to i of for loop in future, dw.
-        # print(projectedRevenuesDF.iloc[0][0]) # [[0],[0]] gives a dataframe, but this gives just a number
-        print(projRevenuesDF)
+        
+        projRevenuesDF.loc[0] = projRevenues#loc will be set to i of for loop in future, dw.
+        # print(projRevenuesDF)   
+        listRevenuesDF = projRevenuesDF.loc[0]
+        # print(projRevenuesDF.iloc[0][0]) # [[0],[0]] gives a dataframe, but this gives just a number
+        # print(projRevenuesDF)
         #Value Projections
         actualValues = []
         projectedValues = []
@@ -302,31 +306,48 @@ class DCFbox(AbstractBox):
         # print("Start of projectedValues \n")
         # print(projectedValues)
 
-        #projected ebit calculations here
-        projebitda = projRevenuesDF - projCostOfGoodsSold - projsgaExpenses
+        #projected ebit calculations here 
+        # 
+        listRevenuesDF = listRevenuesDF.reset_index(drop = True)
+        projRevenuesOnly = listRevenuesDF.drop(labels=[0]) 
+        projRevenuesOnly = projRevenuesOnly.reset_index(drop = True)
+        projebitda = projRevenuesOnly - projCostOfGoodsSold - projsgaExpenses
+        # tmpProjebitda = []
+        # for i in range (5):
+        #     tmp = projRevenuesOnly.iloc[i] - projCostOfGoodsSold.iloc[i] - projsgaExpenses.iloc[i]
+        #     tmpProjebitda.append(tmp)
+        # projebitda = pd.Series(tmpProjebitda)
+        # print(projCostOfGoodsSold)
+        # print(projsgaExpenses)
+        # print(projebitda)
         projebit = projebitda - projDepreciation
+        # print(projebit)
         projIncomeTaxExpense = projebit*projIncomeTaxRate
+        # print(projIncomeTaxExpense)
         projebiat = projebit - projIncomeTaxExpense
-        #end of ebit calc
+        # print(projebiat)
+        # end of ebit calc
 
         projUnleveredFCFF = projebiat + projDepreciation - projcapex - projChangeInNWC
-        
+        # print(projUnleveredFCFF)
         #start of Discounted Levered FCFF
         WACC = self.WACC
+        # print(WACC)
         tmpVal = pd.Series() #((1+WACC)^t)
         for i in range(5):
-            x = (1+WACC)^(i+1)
+            x = (1+WACC)**(i+1)
             tmpInsert = pd.Series([x])
             tmpVal = tmpVal.append(tmpInsert, ignore_index=True)
         projLeveredFCFF = projUnleveredFCFF/tmpVal
+        # print(projLeveredFCFF)
         #end of Discounted Levered FCFF
-
         perpetualGrowthRate = .02
-        terminalValue = projLeveredFCFF.iloc[-1]*(x*(1+perpetualGrowthRate))/(WACC-perpetualGrowthRate))
-        enterpriseValue = projectedLeveredFCFF.sum()+terminalValue   
-        equityValue = enterpriseValue + cash - totalDebt 
-        #estimatedSharePrice = equityValue - sharesOutstanding
-        #print (estimatedSharePrice)
+        terminalValue = projLeveredFCFF.iloc[-1]*((x*(1+perpetualGrowthRate))/(WACC-perpetualGrowthRate))
+        enterpriseValue = projLeveredFCFF.sum()+terminalValue   
+        equityValue = enterpriseValue + cash.iloc[-1] - totalDebt.iloc[-1]
+        estimatedSharePrice = equityValue/sharesOutstanding.iloc[-1]
+        print(estimatedSharePrice)
+        # print (estimatedSharePrice)
         
 
     
