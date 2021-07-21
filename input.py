@@ -66,12 +66,14 @@ def get_sheet(financials, tickers, period, sheetType):
 		title = 'balanceSheetHistory'
 	elif(sheetType == 'cash'):
 		title = 'cashflowStatementHistory'
-	else:
+	elif(sheetType == 'income'):
 		title = 'incomeStatementHistory'
+	else: 
+		return ('Incorect SheetType') #change in future to more solid error type
 
 	if(period == 'quarterly'):
 		title = title + 'Quarterly'
-
+ 
 	company_balance_sheet_data_qt = financials.get_financial_stmts(period, sheetType) #get balance sheet
 	df = pd.DataFrame(data = None, columns = ['date'])
 	for company in tickers:
@@ -91,7 +93,6 @@ def get_sheet(financials, tickers, period, sheetType):
 			#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
 			df = df.append(data, ignore_index = True)
 	return df, company_balance_sheet_data_qt[title]
-
 
 
 def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
