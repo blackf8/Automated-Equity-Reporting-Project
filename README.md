@@ -1,4 +1,4 @@
-# Automated-Equity-Research-Project-AER-
+# Automated Equity Reporting Project (AER)
 ## Who We Are
 We are a group of Brandeis & Colgate Business and Computer Science students who are
 looking to incorporate our mixed interests together in a project. We are looking to create a
