@@ -4,7 +4,7 @@ from yahoofinancials import YahooFinancials as yf
 
 
 df = []
-tickers = ['TSLA']
+tickers = ['TSLA','F']
 financialsTicker = yf(tickers)
 # start_date = '2018-11-27'
 # end_date = '2018-11-28'
@@ -19,8 +19,5 @@ financialsTicker = yf(tickers)
 # for ticker in (tickers):
 #     df.append(input.get_stock_price_data_withPD(financialsTicker,ticker,start_date,end_date,'daily')) 
 
-box1 = DCFbox(financialsTicker)
-
-WACCtemp = box1.calcWACC(tickers)
-box1.WACC = WACCtemp
-box1.calcFCFF(tickers)
+box1 = DCFbox(tickers)
+box1.totalEvaluator(tickers)

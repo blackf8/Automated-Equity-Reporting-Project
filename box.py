@@ -5,9 +5,12 @@ import numpy as np
 import heapdict
 import datetime 
 from datetime import date as dt
+import logging 
+
 #import test
 import input
-
+today =dt.today()
+logging.basicConfig(filename=str('DCFcalc'+today.strftime('%Y-%m-%d')),level=logging.INFO,format ='%(asctime)s:%(message)s')
 # things needed (some are done)
 # list of apis (preset inside each method)
 # list of tickers (input)
@@ -63,7 +66,6 @@ class PriceBox(AbstractBox):
     def totalEvaluator(self, tickerList):
         #
         hd = dict.fromkeys(tickerList)
-
         for ticker in tickerList:
             tickerValue = self.tickerEvaluator(ticker)
             hd[ticker]= tickerValue
@@ -82,24 +84,17 @@ class PriceBox(AbstractBox):
 
 
 class DCFbox(AbstractBox):
-    def __init__(self,financials):
-        self.__financials = financials
-        self.__WACC = None 
+    def __init__(self,tickers):
+        self.__tickers = tickers
         self.__today = dt.today()
         self.__minusOneYear = dt.today()-datetime.timedelta(days=365)
 
                     
         #WACC stuff here
-    def tickerEvaluator(self):
-        pass
-
-    def totalEvaluator(self):
-        pass
-
     def equalizer(self):
         pass
 
-    def calcWACC(self,tickers):
+    def calcWACC(self, ticker): #ticker must be a single str inside of a list
         #variables needed:
         # WACC needs Cost of Equity and Cost of Debt
 
@@ -135,10 +130,11 @@ class DCFbox(AbstractBox):
         #4.) figure out what makes this update every second
         #5.) accuracy improvement
         #5a.) marketReturn is a default number, see if this can be edited.
-        tickerdataIncome = input.get_sheet(self.__financials,tickers,'annual','income')
-        tickerdataCash = input.get_sheet(self.__financials,tickers,'annual','cash')
-        tickerdataBalance = input.get_sheet(self.__financials,tickers, 'annual','balance')
-        tickerdataSummary = yf.get_summary_data(yf(tickers[0]),reformat=True)
+        logging.info('Begin of WACC calculations\n\n')
+        tickerdataIncome = input.get_sheet(yf(ticker),ticker,'annual','income')
+        tickerdataCash = input.get_sheet(yf(ticker),ticker,'annual','cash')
+        tickerdataBalance = input.get_sheet(yf(ticker),ticker, 'annual','balance')
+        tickerdataSummary = yf.get_summary_data(yf(ticker),reformat=True)
         FVXdata = input.get_stock_price_data_withPD(yf('^FVX'),['^FVX'],self.__minusOneYear.strftime("%Y-%m-%d"),self.__today.strftime("%Y-%m-%d"),'monthly')
         GSPCdata = yf.get_summary_data(yf('^GSPC'),reformat=True)
         # Cost of Equity
@@ -146,22 +142,24 @@ class DCFbox(AbstractBox):
 
         riskFreeRate =FVXdata.loc[:,'close'].iloc[-1]
         riskFreeRate = riskFreeRate/100
-        print ("riskFreeRate: "+str(riskFreeRate))
-        beta = tickerdataSummary.get(tickers[0]).get('beta') #yf get_beta()
+        logging.info("riskFreeRate: "+str(riskFreeRate))
+        beta = tickerdataSummary.get(ticker[0]).get('beta') #yf get_beta()
         #DONT CHANGE THIS, TICKERDATASUMMARY IS NOT IN 
-        print ("beta: "+str(beta))
+        logging.info("beta: "+str(beta))
 
         #marketReturn calc
         currentMarketValue = GSPCdata.get('^GSPC').get('regularMarketOpen')
+        logging.info('currentMarketValue: '+str(currentMarketValue))
         previousMarketValue = GSPCdata.get('^GSPC').get('regularMarketOpen') #these two may require a bit of sorting
+        logging.info('previousMarketValue: '+str(previousMarketValue))
         marketReturn = .098 #((currentMarketValue-previousMarketValue)/abs(previousMarketValue))
-        print ("marketReturn: "+str(marketReturn))
+        logging.info("marketReturn: "+str(marketReturn))
 
         marketRiskPremium = marketReturn - riskFreeRate
-        print ("marketRiskPremium: "+str(marketRiskPremium))
+        logging.info("marketRiskPremium: "+str(marketRiskPremium))
 
         costOfEquity = riskFreeRate + (beta*marketRiskPremium)
-        print ("costOfEquity: "+str(costOfEquity))
+        logging.info("costOfEquity: "+str(costOfEquity))
 
         #tickerDateIncome = str(list(tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].keys())[0]) #
         # tickerDateBalance = str(list(tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].keys())[0])
@@ -169,44 +167,52 @@ class DCFbox(AbstractBox):
         # interestExpense = abs(tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('interestExpense')) #COMPLETED tickerdata
          
         interestExpense = abs(tickerdataIncome.loc[0,'interestExpense'])
-        print ("interestExpense: "+str(interestExpense))
+        logging.info("interestExpense: "+str(interestExpense))
 
         # longTermDebt = tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].get(tickerDateBalance).get('longTermDebt') #COMPLETE
         # shortLongTermDebt = tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].get(tickerDateBalance).get('shortLongTermDebt') #COMPLETE
         longTermDebt = tickerdataBalance.loc[0,'longTermDebt']
+        logging.info('longTermDebt: '+str(longTermDebt))
         shortLongTermDebt = tickerdataBalance.loc[0,'longTermDebt']
+        logging.info ('shortLongTermDebt: '+str(shortLongTermDebt))
         totalDebt = shortLongTermDebt + longTermDebt
         costofDebt = interestExpense/totalDebt
 
-        print ("totalDebt: "+str(totalDebt))
-        print ("costofDebt: "+str(+costofDebt))
+        logging.info("totalDebt: "+str(totalDebt))
+        logging.info ("costofDebt: "+str(+costofDebt))
 
         #WACC calc
         # ebit = tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('ebit') #COMPLETE
         ebit = tickerdataIncome.loc[0,'ebit']
-        print ("ebit: "+str(ebit))
+        logging.info("ebit: "+str(ebit))
         
-        equityValue = tickerdataSummary.get('TSLA').get("marketCap")
+        # equityValue = tickerdataSummary.get('TSLA').get("marketCap")
+        equityValue = tickerdataSummary.get(ticker[0]).get('marketCap')
+        logging.info('equityValue: '+str(equityValue))
         # cash = tickerdataBalance.get('balanceSheetHistory').get('TSLA')[0].get(tickerDateBalance).get('cash') #COMPLETE
         cash = tickerdataBalance.loc[0,'cash']
-        print ("cash: "+str(cash))
+        logging.info("cash: "+str(cash))
         enterpriseValue = equityValue+totalDebt-cash
         equityWeight = equityValue/enterpriseValue
         debtWeight = totalDebt/enterpriseValue
         # taxExpense = tickerdataIncome.get('incomeStatementHistory').get('TSLA')[0].get(tickerDateIncome).get('incomeTaxExpense') #COMPLETE
         taxExpense = tickerdataIncome.loc[0,'incomeTaxExpense']
+        logging.info("taxExpense: "+str(taxExpense))
         taxRate = taxExpense/ebit
         WACC = (equityWeight*costOfEquity)+(debtWeight*costofDebt*(1-taxRate))
-        print ("WACC: "+str(WACC))
+        logging.info("WACC: "+str(WACC))
+        logging.info("\n\nEnd of WACC calculations")
         return WACC
 
-    def calcFCFF(self,tickers): 
+    def calcFCFF(self,ticker, WACC): 
+        logging.info("\n\nStart of FCFF calculations\n\n")
         def calcDeltaNWC(self):
-            balanceSheet = input.get_sheet(self.__financials,tickers,'annual','balance')
+            balanceSheet = input.get_sheet(yf(ticker),ticker,'annual','balance')
             currentAssets = balanceSheet.loc[:,'totalCurrentAssets']
             currentLiabilities = balanceSheet.loc[:,'totalCurrentLiabilities']
             # changeInNWC = (currentAssetsY1-currentLiabilitiesY1)-(currentAssetsY0-currentLiabilitiesY0)
             changeInNWC = pd.DataFrame(columns=['changeInNWC'])
+            logging.info("changeInNWC: "+str(changeInNWC)) 
             #for now, projections are hardcoded, in the future, we will be reading them off a csv file.
 
 
@@ -216,10 +222,10 @@ class DCFbox(AbstractBox):
         # = EBIT - taxes + (depreciation+amortization) - capital expenditure - change in net working capital (change in NWC)
         # change in NWC = (this year current assets - this year current liabilities) - (last year current assets - last year current liabilities)
         
-        incomeStatement = input.get_sheet(self.__financials,tickers,'annual','income')
-        cashflowStatement = input.get_sheet(self.__financials,tickers,'annual','cash')
-        balanceSheet = input.get_sheet(self.__financials,tickers, 'annual','balance')
-        keyStatements = input.get_stats(self.__financials,tickers)
+        incomeStatement = input.get_sheet(yf(ticker),ticker,'annual','income')
+        cashflowStatement = input.get_sheet(yf(ticker),ticker,'annual','cash')
+        balanceSheet = input.get_sheet(yf(ticker),ticker, 'annual','balance')
+        keyStatements = input.get_stats(yf(ticker),ticker)
         revenue = incomeStatement.loc[:,'totalRevenue']
         costOfGoodsSold = incomeStatement.loc[:,'costOfRevenue']
         grossProfit = incomeStatement.loc[:,'grossProfit']
@@ -235,9 +241,26 @@ class DCFbox(AbstractBox):
         longTermDebt = balanceSheet.loc[:,'longTermDebt']
         totalDebt = shortTermDebt + longTermDebt
         sharesOutstanding = keyStatements.loc[:,'sharesOutstanding']
+
+        logging.info("revenue: "+str(revenue)) 
+        logging.info("costOfGoodsSold: "+str(costOfGoodsSold)) 
+        logging.info("grossProfit: "+str(grossProfit)) 
+        logging.info("depreciation: "+str(depreciation)) 
+        logging.info("sgaExpenses: "+str(sgaExpenses)) 
+        logging.info("incomeTaxExpense: "+str(incomeTaxExpense)) 
+        logging.info("capex: "+str(capex)) 
+        logging.info("netReceivables: "+str(netReceivables)) 
+        logging.info("inventory: "+str(inventory)) 
+        logging.info("totalCurrentLiabilities: "+str(totalCurrentLiabilities)) 
+        logging.info("cash: "+str(cash)) 
+        logging.info("shortTermDebt: "+str(shortTermDebt)) 
+        logging.info("longTermDebt: "+str(longTermDebt)) 
+        logging.info("totalDebt: "+str(totalDebt)) 
+        logging.info("sharesOutstanding: "+str(sharesOutstanding)) 
         #for income tax purposess
         ebit = incomeStatement.loc[:,'ebit']
-        
+        logging.info("ebit: "+str(ebit)) 
+
         yearsProjected = ['2020','2021','2022','2023','2024','2025'] 
         
         #can be optimized for accuracy using Rosenbaum & Pearl DCF changeinNWC method (calculate and project ratios)
@@ -257,12 +280,15 @@ class DCFbox(AbstractBox):
             # changeInNWC.append(tmp)
             changeInNWC.append(abs(tmp))
         changeInNWC = pd.Series(changeInNWC)
-        
+        logging.info("changeInNWC: "+str(changeInNWC))
+
         ebitda = revenue - costOfGoodsSold - sgaExpenses
         ebit =  ebitda - depreciation #different from ebit for more careful calculations. 
         ebiat = ebit - incomeTaxExpense
+        logging.info("ebiat: "+str(ebiat))
         
         unleveredFCF = ebiat + depreciation - capex - changeInNWC
+        logging.info("unleveredFCF: "+str(unleveredFCF))
         #incomeTaxRate calculations; IMPROVE ACCURACY OF TAX RATE PROJECTIONS
         incomeTaxRate = incomeTaxExpense/ebit
         tempTaxRate = incomeTaxRate.copy(deep=True)
@@ -284,7 +310,7 @@ class DCFbox(AbstractBox):
             projRevenues.append(tempValue)
 
         projRevenuesDF = pd.DataFrame(columns=yearsProjected)
-        
+        logging.info("projRevenuesDF: "+str(projRevenuesDF))
         projRevenuesDF.loc[0] = projRevenues#loc will be set to i of for loop in future, dw.
         # print(projRevenuesDF)   
         listRevenuesDF = projRevenuesDF.loc[0]
@@ -321,7 +347,12 @@ class DCFbox(AbstractBox):
         projcapex = projectedValues[3]
         projChangeInNWC = projectedValues[4]
         projIncomeTaxRate = projectedValues[5]
-
+        logging.info("projCostOfGoodsSold: "+str(projCostOfGoodsSold))
+        logging.info("projsgaExpenses: "+str(projsgaExpenses))
+        logging.info("projDepreciation: "+str(projDepreciation))
+        logging.info("projcapex: "+str(projcapex))
+        logging.info("projChangeInNWC: "+str(projChangeInNWC))
+        logging.info("projIncomeTaxRate: "+str(projIncomeTaxRate))
         # print (projectedValues)
         # print("Start of actualValues \n")      
         # print(actualValues)
@@ -334,6 +365,7 @@ class DCFbox(AbstractBox):
         projRevenuesOnly = listRevenuesDF.drop(labels=[0]) 
         projRevenuesOnly = projRevenuesOnly.reset_index(drop = True)
         projebitda = projRevenuesOnly - projCostOfGoodsSold - projsgaExpenses
+        logging.info("projebitda: "+str(projebitda))
         # tmpProjebitda = []
         # for i in range (5):
         #     tmp = projRevenuesOnly.iloc[i] - projCostOfGoodsSold.iloc[i] - projsgaExpenses.iloc[i]
@@ -353,7 +385,6 @@ class DCFbox(AbstractBox):
         projUnleveredFCFF = projebiat + projDepreciation - projcapex - projChangeInNWC
         # print(projUnleveredFCFF)
         #start of Discounted Levered FCFF
-        WACC = self.WACC
         # print(WACC)
         tmpVal = pd.Series() #((1+WACC)^t)
         for i in range(5):
@@ -369,9 +400,25 @@ class DCFbox(AbstractBox):
         equityValue = enterpriseValue + cash.iloc[-1] - totalDebt.iloc[-1]
         estimatedSharePrice = equityValue/sharesOutstanding.iloc[-1]
         print(estimatedSharePrice)
+        logging.info("\n\n###### estimatedSharePrice: "+str(estimatedSharePrice)"\n\n")
+        return estimatedSharePrice
         # print (estimatedSharePrice)
-        
+    
+    def tickerEvaluator(self,ticker):
+        WACC = self.calcWACC (ticker)
+        estimatedSharePrice = self.calcFCFF(ticker,WACC)
+        return estimatedSharePrice
 
+    def totalEvaluator(self,tickers):
+        df = pd.Series()
+        for tick in tickers: #input.py can only accept lists, so tick is str, ticker is list with a str, and tickers is list of strs
+            ticker = [tick]
+            estimatedSharedPrice = self.tickerEvaluator(ticker)
+            tmp = {tick:estimatedSharedPrice}
+            tmpdf = pd.Series(tmp)
+            df.append(tmpdf)
+        print(df)
+        return df
     
 
         
