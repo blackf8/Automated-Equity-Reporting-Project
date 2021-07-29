@@ -92,7 +92,7 @@ def get_sheet(financials, tickers, period, sheetType):
 				data[key] = val
 			#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
 			df = df.append(data, ignore_index = True)
-	return df, company_balance_sheet_data_qt[title]
+	return df#, company_balance_sheet_data_qt[title]
 
 
 def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
@@ -127,7 +127,7 @@ def get_stock_price_data_withPD(financials, tickers, start_date, end_date, perio
 			'adjclose': tmp['adjclose'],
 			'formatted_date': tmp['formatted_date']}
 			df = df.append(data, ignore_index = True)
-	return df, historical_stock_prices_data
+	return df#, historical_stock_prices_data
 
 
 
