@@ -180,7 +180,7 @@ class DCFbox(AbstractBox):
         # print ("WACC: "+str(WACC))
         return WACC
 
-    def calcFCFF(self): 
+    def calcFCFF(self):
         def calcDeltaNWC(self):
             balanceSheet = input.get_sheet(self.__financials,'TSLA','annual','balance')
             currentAssets = balanceSheet.loc[:,'totalCurrentAssets']
@@ -191,11 +191,11 @@ class DCFbox(AbstractBox):
 
 
         # EBIT Calculation
-        # = Revenue - Cost of goods sold - Operating Expenses 
+        # = Revenue - Cost of goods sold - Operating Expenses
         # FCFF Calculation
         # = EBIT - taxes + (depreciation+amortization) - capital expenditure - change in net working capital (change in NWC)
         # change in NWC = (this year current assets - this year current liabilities) - (last year current assets - last year current liabilities)
-        
+
         incomeStatement = input.get_sheet(self.__financials,'TSLA','annual','income')
         cashflowStatement = input.get_sheet(self.__financials,'TSLA','annual','cash')
         balanceSheet = input.get_sheet(self.__financials,'TSLA', 'annual','balance')
@@ -217,9 +217,9 @@ class DCFbox(AbstractBox):
         sharesOutstanding = keyStatements.loc[:,'sharesOutstanding']
         #for income tax purposess
         ebit = incomeStatement.loc[:,'ebit']
-        
-        yearsProjected = ['2020','2021','2022','2023','2024','2025'] 
-        
+
+        yearsProjected = ['2020','2021','2022','2023','2024','2025']
+
         #can be optimized for accuracy using Rosenbaum & Pearl DCF changeinNWC method (calculate and project ratios)
         changeInNWC = []
         changeInNWC.append(0)
@@ -228,20 +228,20 @@ class DCFbox(AbstractBox):
         #netReceivables
         #inventory
         #totalCurrentLiabilities
-                
+
         for i in range(3):
             #old - new
             #((old_netR+old_inv)-old_totalCurL)-((new_netR+new_inv)-new_totalCurL)
-            #extend this for loops with another loop later for more companies 
+            #extend this for loops with another loop later for more companies
             tmp = abs(((netReceivables[i]+inventory[i])-totalCurrentLiabilities[i]))-abs(((netReceivables[i+1]+inventory[i+1])-totalCurrentLiabilities[i+1]))
             # changeInNWC.append(tmp)
             changeInNWC.append(abs(tmp))
         changeInNWC = pd.Series(changeInNWC)
-        
+
         ebitda = revenue - costOfGoodsSold - sgaExpenses
-        ebit =  ebitda - depreciation #different from ebit for more careful calculations. 
+        ebit =  ebitda - depreciation #different from ebit for more careful calculations.
         ebiat = ebit - incomeTaxExpense
-        
+
         unleveredFCF = ebiat + depreciation - capex - changeInNWC
         #incomeTaxRate calculations; IMPROVE ACCURACY OF TAX RATE PROJECTIONS
         incomeTaxRate = incomeTaxExpense/ebit
@@ -251,7 +251,7 @@ class DCFbox(AbstractBox):
             tempTaxRate.loc[index] = max(0,value)
 
         incomeTaxRate = tempTaxRate
-        
+
         #this needs to be like 3 for loops of csv calls, projecting per company, then projecting ever company
         #will be fast
         starterRevenue = list(revenue)
@@ -264,16 +264,16 @@ class DCFbox(AbstractBox):
             projRevenues.append(tempValue)
 
         projRevenuesDF = pd.DataFrame(columns=yearsProjected)
-        
+
         projRevenuesDF.loc[0] = projRevenues#loc will be set to i of for loop in future, dw.
-        # print(projRevenuesDF)   
+        # print(projRevenuesDF)
         listRevenuesDF = projRevenuesDF.loc[0]
         # print(projRevenuesDF.iloc[0][0]) # [[0],[0]] gives a dataframe, but this gives just a number
         # print(projRevenuesDF)
         #Value Projections
         actualValues = []
         projectedValues = []
-        
+
         actualValues.append(costOfGoodsSold)
         actualValues.append(sgaExpenses)
         actualValues.append(depreciation)
@@ -292,7 +292,7 @@ class DCFbox(AbstractBox):
                 tempProj = tempProj.append(tmpAppend, ignore_index=True)
                 tempActual = tempActual.append(tmpAppend, ignore_index=True)
             projectedValues.append(tempProj) #append tempProj for just projections, tempActual includes previous years data along with future projections
-        
+
         projCostOfGoodsSold = projectedValues[0]
         projsgaExpenses = projectedValues[1]
         projDepreciation = projectedValues[2]
@@ -301,15 +301,15 @@ class DCFbox(AbstractBox):
         projIncomeTaxRate = projectedValues[5]
 
         # print (projectedValues)
-        # print("Start of actualValues \n")      
+        # print("Start of actualValues \n")
         # print(actualValues)
         # print("Start of projectedValues \n")
         # print(projectedValues)
 
-        #projected ebit calculations here 
-        # 
+        #projected ebit calculations here
+        #
         listRevenuesDF = listRevenuesDF.reset_index(drop = True)
-        projRevenuesOnly = listRevenuesDF.drop(labels=[0]) 
+        projRevenuesOnly = listRevenuesDF.drop(labels=[0])
         projRevenuesOnly = projRevenuesOnly.reset_index(drop = True)
         projebitda = projRevenuesOnly - projCostOfGoodsSold - projsgaExpenses
         # tmpProjebitda = []
@@ -343,16 +343,13 @@ class DCFbox(AbstractBox):
         #end of Discounted Levered FCFF
         perpetualGrowthRate = .02
         terminalValue = projLeveredFCFF.iloc[-1]*((x*(1+perpetualGrowthRate))/(WACC-perpetualGrowthRate))
-        enterpriseValue = projLeveredFCFF.sum()+terminalValue   
+        enterpriseValue = projLeveredFCFF.sum()+terminalValue
         equityValue = enterpriseValue + cash.iloc[-1] - totalDebt.iloc[-1]
         estimatedSharePrice = equityValue/sharesOutstanding.iloc[-1]
         print(estimatedSharePrice)
         # print (estimatedSharePrice)
-        
 
-    
 
-        
 if __name__ == "__main__":
     # send to output
     #stocks for testing: GME, AMC, TSLA
