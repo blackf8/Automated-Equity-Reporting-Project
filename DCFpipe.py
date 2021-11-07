@@ -1,7 +1,11 @@
 import input
 from box import PriceBox, DCFbox
 from yahoofinancials import YahooFinancials as yf
+import time
+startTime = time.time()
 
+
+#only works for tsla atm, need to make this more generalized.
 
 df = []
 tickers = ['TSLA']
@@ -12,17 +16,14 @@ financialsFVX = yf('^FVX')
 financialsGSPC = yf('^GSPC')
 
 
-FVXdata = yf.get_historical_price_data(financialsFVX,'2020-06-22','2021-06-22','monthly')
-GSPCdata = yf.get_summary_data(financialsGSPC,reformat=True)
-tickerdataIncome = yf.get_financial_stmts(financialsTicker,'annual','income',reformat=True)
-tickerdataBalance = yf.get_financial_stmts(financialsTicker,'annual','balance',reformat=True)
-tickerdataCash = yf.get_financial_stmts(financialsTicker,'annual','cash',reformat=True)
-tickerdataSummary = yf.get_summary_data(financialsTicker,reformat=True)
-for ticker in (tickers):
-    df.append(input.get_stock_price_data_withPD(financialsTicker,ticker,start_date,end_date,'daily')) 
-
-box1 = DCFbox(financialsTicker)
-
+FVXdata, GSPCdata, tickerdataIncome, tickerdataBalance, tickerdataCash, tickerdataSummary = input.boot_data(start_date, end_date, financialsTicker, financialsFVX, financialsGSPC)
+df.append(input.get_stock_price_data_withPD(financialsTicker,tickers,start_date,end_date,'daily'))
+box1 = DCFbox(financialsTicker, tickers)
 WACCtemp = box1.calcWACC(FVXdata, GSPCdata, tickerdataIncome, tickerdataBalance, tickerdataCash, tickerdataSummary)
 box1.WACC = WACCtemp
 box1.calcFCFF()
+
+
+
+executionTime = (time.time() - startTime)
+print('Execution time in seconds: ' + str(executionTime))

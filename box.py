@@ -79,9 +79,10 @@ class PriceBox(AbstractBox):
 
 
 class DCFbox(AbstractBox):
-    def __init__(self,financials):
-        self.__financials = yf('TSLA')
+    def __init__(self,financials, tickers):
+        self.__financials = financials
         self.__WACC = None
+        self.__tickers = tickers
         #WACC stuff here
     def tickerEvaluator(self):
         pass
@@ -196,10 +197,16 @@ class DCFbox(AbstractBox):
         # = EBIT - taxes + (depreciation+amortization) - capital expenditure - change in net working capital (change in NWC)
         # change in NWC = (this year current assets - this year current liabilities) - (last year current assets - last year current liabilities)
 
-        incomeStatement = input.get_sheet(self.__financials,'TSLA','annual','income')
-        cashflowStatement = input.get_sheet(self.__financials,'TSLA','annual','cash')
-        balanceSheet = input.get_sheet(self.__financials,'TSLA', 'annual','balance')
+        incomeStatement, incomeStatementRaw = input.get_sheet(self.__financials,['TSLA'],'annual','income')
+        cashflowStatement, cashflowStatementRaw = input.get_sheet(self.__financials,['TSLA'],'annual','cash')
+        balanceSheet, balanceSheetRaw = input.get_sheet(self.__financials,['TSLA'], 'annual','balance')
         keyStatements = input.get_stats(self.__financials,['TSLA'])
+
+
+        incomeStatement = incomeStatement[incomeStatement['Company'] == 'TSLA']
+        cashflowStatement = cashflowStatement[cashflowStatement['Company'] == 'TSLA']
+        balanceSheet = balanceSheet[balanceSheet['Company'] == 'TSLA']
+
         revenue = incomeStatement.loc[:,'totalRevenue']
         costOfGoodsSold = incomeStatement.loc[:,'costOfRevenue']
         grossProfit = incomeStatement.loc[:,'grossProfit']
