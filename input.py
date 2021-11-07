@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from yahoofinancials import YahooFinancials
 import time
 import datetime
+import pickle as pkl
+import os
+
 pd.set_option('display.max_columns',50)
 pd.options.display.float_format = '{:,.2f}'.format
 
@@ -46,6 +49,7 @@ def get_stats(financials, tickers):
 		company_key_statistics_data[key]["Company"] = key
 		samples.append(list(company_key_statistics_data[key].values()))
 	data = pd.DataFrame(samples, columns = company_key_statistics_data[tickers[0]].keys())
+	store("get_stats", tickers, data, None, None)
 	return data
 
 def get_sheet(financials, tickers, period, sheetType):
@@ -60,39 +64,44 @@ def get_sheet(financials, tickers, period, sheetType):
 		df (DataFrame): The data of the sheet in the form of a DataFrame.
 		company_balance_sheet_data_qt[title] (Dictionary): The raw data in the form of a dictionary.
 	"""
-
-	title = ''
-	if(sheetType == 'balance'):
-		title = 'balanceSheetHistory'
-	elif(sheetType == 'cash'):
-		title = 'cashflowStatementHistory'
-	elif(sheetType == 'income'):
-		title = 'incomeStatementHistory'
-	else: 
-		return ('Incorect SheetType') #change in future to more solid error type
-
-	if(period == 'quarterly'):
-		title = title + 'Quarterly'
- 
-	company_balance_sheet_data_qt = financials.get_financial_stmts(period, sheetType) #get balance sheet
 	df = pd.DataFrame(data = None, columns = ['date'])
-	for company in tickers:
-		tmp = company_balance_sheet_data_qt[title][company]
-		dates = len(tmp)
-		balance_sheet_contents = set()
-		for i in range(0,dates):
-			date = (list(tmp[i].keys())[0])
-			balance_sheet_contents.update(set(tmp[i][date].keys()))
+	company_balance_sheet_data_qt = None
+	df, look_up_tickers = load("get_sheet", tickers, df, sheetType, period)
+	if(len(look_up_tickers) > 0):
+		title = ''
+		if(sheetType == 'balance'):
+			title = 'balanceSheetHistory'
+		elif(sheetType == 'cash'):
+			title = 'cashflowStatementHistory'
+		elif(sheetType == 'income'):
+			title = 'incomeStatementHistory'
+		else:
+			return ('Incorect SheetType') #change in future to more solid error type
 
-		for i in range(0,dates):
-			date = (list(tmp[i].keys())[0])
-			data = {'date': date, 'company': company}
-			for key in balance_sheet_contents:
-				val = in_dict(tmp[i][date], key)
-				data[key] = val
-			#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
-			df = df.append(data, ignore_index = True)
-	return df, company_balance_sheet_data_qt[title]
+		if(period == 'quarterly'):
+			title = title + 'Quarterly'
+
+		company_balance_sheet_data_qt = financials.get_financial_stmts(period, sheetType) #get balance sheet
+
+		for company in tickers:
+			tmp = company_balance_sheet_data_qt[title][company]
+			dates = len(tmp)
+			balance_sheet_contents = set()
+			for i in range(0,dates):
+				date = (list(tmp[i].keys())[0])
+				balance_sheet_contents.update(set(tmp[i][date].keys()))
+
+			for i in range(0,dates):
+				date = (list(tmp[i].keys())[0])
+				data = {'Date': date, 'Company': company}
+				for key in balance_sheet_contents:
+					val = in_dict(tmp[i][date], key)
+					data[key] = val
+				#'propertyPlantEquipment', 'totalCurrentAssets', 'longTermInvestments', 'netTangibleAssets', 'shortTermInvestments', 'netReceivables', 'accountsPayable']
+				df = df.append(data, ignore_index = True)
+		store("get_sheet", tickers, df, sheetType, period)
+		company_balance_sheet_data_qt = company_balance_sheet_data_qt[title]
+	return df, company_balance_sheet_data_qt
 
 
 def get_stock_price_data_withPD(financials, tickers, start_date, end_date, period):
@@ -114,6 +123,7 @@ def get_stock_price_data_withPD(financials, tickers, start_date, end_date, perio
 	df = pd.DataFrame(data = None, columns = cols)
 
 	for company_name in tickers:
+		print(tickers)
 		company_data = historical_stock_prices_data[company_name]
 		for x in range(len(company_data['prices'])):
 			tmp = company_data['prices'][x]
@@ -129,6 +139,73 @@ def get_stock_price_data_withPD(financials, tickers, start_date, end_date, perio
 			df = df.append(data, ignore_index = True)
 	return df, historical_stock_prices_data
 
+
+def boot_data(start_date, end_date, financialsTicker, financialsFVX, financialsGSPC):
+	data_names = ['FVXdata', 'GSPCdata', 'tickerdataIncome', 'tickerdataBalance', 'tickerdataCash', 'tickerdataSummary']
+	data_calls = []
+	data = []
+
+	for name in data_names:
+		path = "storage/" + name +'.pickle'
+		if(os.path.exists(path)):
+			with open(path, 'rb') as f:
+				data.append(pkl.load(f))
+		else:
+			if(name == 'FVXdata'):
+				temp_data = fvxdata_helper(financialsFVX)
+			if(name == 'GSPCdata'):
+				temp_data = gspcdata_helper(financialsGSPC)
+			if(name == 'tickerdataIncome'):
+				temp_data = tickerdataIncome(financialsTicker)
+			if(name == 'tickerdataBalance'):
+				temp_data = tickerdataBalance(financialsTicker)
+			if(name == 'tickerdataCash'):
+				temp_data = tickerdataCash_helper(financialsTicker)
+			if(name == 'tickerdataSummary'):
+				temp_data = tickerdataSummary_helper(financialsTicker)
+			data.append(temp_data)
+			with open(path, 'wb') as f:
+				pkl.dump(temp_data,f)
+	return data
+
+def fvxdata_helper(financialsFVX):
+	return YahooFinancials.get_historical_price_data(financialsFVX,'2020-06-22','2021-06-22','monthly')
+
+def gspcdata_helper(financialsGSPC):
+	return YahooFinancials.get_summary_data(financialsGSPC,reformat=True)
+
+def tickerdataIncome(financialsTicker):
+	return YahooFinancials.get_financial_stmts(financialsTicker,'annual','income',reformat=True)
+
+def tickerdataBalance(financialsTicker):
+	return YahooFinancials.get_financial_stmts(financialsTicker,'annual','balance',reformat=True)
+
+def tickerdataCash_helper(financialsTicker):
+	return YahooFinancials.get_financial_stmts(financialsTicker,'annual','cash',reformat=True)
+
+def tickerdataSummary_helper(financialsTicker):
+	return YahooFinancials.get_summary_data(financialsTicker,reformat=True)
+
+def store(methodName, tickers, df, sheetType, period):
+	for i in tickers:
+		if(sheetType is None or period is None):
+			path = "storage/" + methodName +  '-' + i +'.pickle'
+		else:
+			path = "storage/" + i + '-'+ sheetType + '-'+ period +'.pickle'
+		df_temp = df[df['Company'] == i]
+		with open(path, 'wb') as f:
+			df_temp.to_pickle(f)
+
+def load(methodName, tickers, df, sheetType, period):
+	look_up_tickers = []
+	for i in tickers:
+		path = "storage/" + i + '-'+ sheetType + '-'+ period +'.pickle'
+		if(os.path.exists(path)):
+			with open(path, 'rb') as f:
+				df = df.append(pd.read_pickle(f))
+		else:
+			look_up_tickers.append(i)
+	return df, look_up_tickers
 
 
 #Used strictly for testing.
